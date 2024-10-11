@@ -1,5 +1,5 @@
 #include "spider_client.h"
-#pragma execution_character_set("utf-8")
+//#pragma execution_character_set("utf-8")
 
 void SpiderClient::SearchAndClearUrl(std::string url_str, std::queue<std::string> &url_list)
 {
@@ -47,6 +47,10 @@ SpiderClient::~SpiderClient()
 
 void SpiderClient::RunSpider(SpiderReadConfig& config)
 {
+    start_url = config.start_url;
+    port = config.client_port;
+    max_depth = config.max_depth;
+
     std::queue<std::string> url_list;
     url_list.push(start_url);
 
@@ -54,6 +58,8 @@ void SpiderClient::RunSpider(SpiderReadConfig& config)
 
     for (int depth = 0; depth < max_depth; depth++)
     {
+        std::cout << "DEPTH: " << depth << std::endl;
+
         std::vector<std::thread> threads;
         std::mutex m;
 
@@ -137,14 +143,12 @@ void SpiderClient::RunSpider(SpiderReadConfig& config)
                     std::string url_str = beast::buffers_to_string(res.body().data());
                     std::string wordStr = url_str;
 
-                    
                     Indexer indexer;
                     indexer.ConnectDB(config);
-                    //std::cout << "--------TARGET--------->>>" << target << " thread: " << std::this_thread::get_id() << std::endl;
+
                     indexer.IndexingPages(start_url + target, wordStr);
 
                     SearchAndClearUrl(url_str, url_list);
-               
 
                     beast::error_code ec;
                     stream.shutdown(ec);
@@ -153,25 +157,17 @@ void SpiderClient::RunSpider(SpiderReadConfig& config)
                     {
                         throw beast::system_error{ ec };
                     }
-                    std::cout << "ЗАВЕРШЕНИЕ ПОТОКА: " << std::this_thread::get_id() << std::endl;
+                    std::cout << "ОСТАНОВКА ПОТОКА: " << std::this_thread::get_id() << std::endl;
                 });
         }
 
-        //std::cout << "THREADS JOIN? " << threads.size() << std::endl;
-
         for (auto& thread : threads)
         {
-
             if (thread.joinable())
             {
                 thread.join();
             }
-
-            //std::cout << "THREADS JOIN: " << threads.size() << std::endl;
         }
-
-        //std::cout << "THREADS SIZE: " << threads.size() << std::endl;
-
     }
 }
 

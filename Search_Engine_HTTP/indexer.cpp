@@ -1,5 +1,5 @@
 #include "indexer.h"
-#pragma execution_character_set("utf-8")
+//#pragma execution_character_set("utf-8")
 
 Indexer::Indexer()
 {
@@ -24,12 +24,12 @@ void Indexer::ConnectDB(SpiderReadConfig config)
     txn = new pqxx::work(*connect_db);
 
     txn->exec("CREATE TABLE IF NOT EXISTS pages (id SERIAL PRIMARY KEY, url TEXT UNIQUE NOT NULL);");
-    txn->exec("CREATE TABLE IF NOT EXISTS words (id SERIAL PRIMARY KEY, word TEXT UNIQUE NOT NULL);");
+    txn->exec("CREATE TABLE IF NOT EXISTS words (id SERIAL PRIMARY KEY, word TEXT NOT NULL);");
     txn->exec("CREATE TABLE IF NOT EXISTS page_words (page_id INTEGER REFERENCES pages(id), word_id INTEGER REFERENCES words(id), count INTEGER DEFAULT 0, PRIMARY KEY (page_id, word_id));");
 
     connect_db->prepare("insert_page", "INSERT INTO pages (url) VALUES ($1) ON CONFLICT (url) DO NOTHING RETURNING id");
-    connect_db->prepare("insert_word", "INSERT INTO words (word) VALUES ($1) ON CONFLICT (word) DO NOTHING RETURNING id");
-    connect_db->prepare("insert_page_word", "INSERT INTO page_words (page_id, word_id, count) VALUES ($1, $2, $3) ON CONFLICT (page_id, word_id) DO UPDATE SET count = $3");
+    connect_db->prepare("insert_word", "INSERT INTO words (word) VALUES ($1) RETURNING id");
+    connect_db->prepare("insert_page_word", "INSERT INTO page_words (page_id, word_id, count) VALUES ($1, $2, $3)");
 
     txn->commit();
 

@@ -37,13 +37,14 @@ if (OPENSSL_FOUND)
 #        ${ICU_BEAST_FILES}
         ${BOOST_BEAST_FILES}
         root_certificates.h
-        server_certificate.h
+        config.ini
         indexer.h
         indexer.cpp
         spider_client.h
         spider_client.cpp 
         spider_read_config.h 
-        server.h)
+        server.h 
+        )
 
      add_subdirectory(C:/kurs_cpp/libpqxx-7.7.4 libpqxx-build) 
 

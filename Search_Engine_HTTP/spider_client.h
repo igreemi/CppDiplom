@@ -9,6 +9,7 @@
 #include <thread>
 #include <queue>
 #include <condition_variable>
+#include <Windows.h>
 
 #include "root_certificates.h"
 #include "indexer.h"
@@ -28,12 +29,11 @@ private:
     std::mutex url_list_pull;
     std::mutex url_indexing;
     std::condition_variable cv;
-    std::string start_url = "netology.ru";
-    std::string port = "443";
-    //std::string target = "/";
+    std::string start_url = "";
+    std::string port = "";
     std::string tmp_url = "";
     int version = 11;
-    int max_depth = 2;
+    int max_depth = 0;
 
     void SearchAndClearUrl(std::string url_str, std::queue<std::string>& url_list);
 
