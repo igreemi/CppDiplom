@@ -2,6 +2,7 @@
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/url.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -26,20 +27,27 @@ class SpiderClient
 private:
 
     std::mutex mt;
-    std::mutex url_list_pull;
-    std::mutex url_indexing;
-    std::condition_variable cv;
+    std::mutex mt2;
+    std::condition_variable cv, cv2, cv3, cv4;
+
     std::string start_url = "";
     std::string port = "";
-    std::string tmp_url = "";
+
     int version = 11;
     int max_depth = 0;
 
-    void SearchAndClearUrl(std::string url_str, std::queue<std::string>& url_list);
+    bool state_th = false;
+    bool state_th2 = false;
+    bool state_th3 = false;
+    bool state_th4 = false;
+
+    bool HandleRedirect(boost::url& target_url, http::response<http::string_body>& res);
+    std::string HandleUrl(const std::string& url, std::string& target, std::string& host, std::string port, int depth);
+    void SearchAndClearUrl(std::string url_str, std::string host, std::string target, std::queue<std::string>& url_list);
 
 public:
     
     SpiderClient();
     ~SpiderClient();
-    void RunSpider(SpiderReadConfig& config);
+    void RunSpider(SpiderReadConfig config);
 };

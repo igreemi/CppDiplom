@@ -8,6 +8,7 @@
 #include <boost/regex/icu.hpp>
 #include <unicode/ustream.h>
 
+#include <mutex>
 #include <string>
 #include <regex>
 #include <vector>
@@ -27,6 +28,8 @@ private:
     std::string _user = ""; // = "postgres";
     std::string _pass = ""; // = "123";
 
+    std::mutex mt;
+
     std::string CleanText(std::string& text);
 
 public:
@@ -38,9 +41,9 @@ public:
 
     void ConnectDB(SpiderReadConfig config);
 
-    std::string LowerCases(const std::string& word, const std::string& locale_name);
+    std::string LowerCases(const std::string& word, const std::string locale_name);
 
-    std::map<std::string, int> AnalyzeWords(std::string &text);
+    std::map<std::string, int> AnalyzeWords(std::string text);
 
     void PrintVocabulary(std::map<std::string, int>& vocabulary);
 

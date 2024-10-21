@@ -23,8 +23,12 @@ int main()
 
         std::cout << "--- ÑÒÀÐÒ ÏÀÓÊÀ ---" << std::endl;
         SpiderClient spider_client;
-        spider_client.RunSpider(spider_read_config);
-        std::cout << "--- ÇÀÂÅÐØÅÍÈÅ ÏÀÓÊÀ ---" << std::endl;
+
+        auto lambda_spider = [&spider_client](SpiderReadConfig config) {
+            spider_client.RunSpider(config);
+            };
+        std::thread thread1(lambda_spider, spider_read_config);
+
 
         auto const address = net::ip::make_address("127.0.0.1");
         unsigned short port = static_cast<unsigned short>(std::stoi(spider_read_config.server_port));
@@ -38,7 +42,10 @@ int main()
 
         system("start http://127.0.0.1");
 
+
         ioc.run();
+
+        thread1.join();
     }
     catch (std::exception const& e)
     {

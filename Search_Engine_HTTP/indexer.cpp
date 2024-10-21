@@ -38,31 +38,22 @@ void Indexer::ConnectDB(SpiderReadConfig config)
 
 std::string Indexer::CleanText(std::string& text)
 {
-    boost::locale::generator gen;
-    std::locale loc = gen("ru_RU.UTF-8");
-
     boost::regex regex;
 
-    //regex.assign("(<script.*>.*?</script>)");
     regex.assign("<[^>]*>");
     std::string tmp = boost::regex_replace(text, regex, " ");
-
-    //при повторной фильтрации начинает тормозить и слова на кирилице разбивает
-    //regex.assign("[^а-яА-ЯёЁa-zA-Z0-9]");
-    //regex.assign("<(style|link)[^>]*>.*?</(style|link)>");
-    //tmp = boost::regex_replace(tmp, regex, " ");
 
     return tmp;
 }
 
-std::string Indexer::LowerCases(const std::string& word, const std::string& locale_name)
+std::string Indexer::LowerCases(const std::string& word, const std::string locale_name)
 {
     boost::locale::generator gen;
     std::locale loc = gen(locale_name);
     return boost::locale::to_lower(word, loc);
 }
 
-std::map<std::string, int> Indexer::AnalyzeWords(std::string &text)
+std::map<std::string, int> Indexer::AnalyzeWords(std::string text)
 {
     std::map<std::string, int> frequencies;
     std::vector<std::string> words;
@@ -96,6 +87,8 @@ void Indexer::PrintVocabulary(std::map<std::string, int>& vocabulary)
 
 void Indexer::IndexingPages(std::string url, std::string words) //std::map<std::string, int>& vocabulary)
 {
+//    std::lock_guard<std::mutex> lock(mt);
+
     std::map tmp_vocabulary = AnalyzeWords(words);
     pqxx::result page_res = txn->exec_prepared("insert_page", url);
     //std::cout << "URL " << url << " dobavlen" << " thread: " << std::this_thread::get_id() << std::endl;

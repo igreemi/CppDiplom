@@ -22,15 +22,13 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 namespace my_program_state
 {
-	std::size_t
-		request_count()
+	std::size_t request_count()
 	{
 		static std::size_t count = 0;
 		return ++count;
 	}
 
-	std::time_t
-		now()
+	std::time_t now()
 	{
 		return std::time(0);
 	}
@@ -91,8 +89,7 @@ private:
 	http::response<http::dynamic_body> response_;
 
 	// The timer for putting a deadline on connection processing.
-	net::steady_timer deadline_{
-		socket_.get_executor(), std::chrono::seconds(60) };
+	net::steady_timer deadline_{socket_.get_executor(), std::chrono::seconds(600) };
 
 	// Asynchronously receive a complete request message.
 	void read_request()
@@ -281,13 +278,14 @@ private:
 			if (i == 0)
 			{
 				delimiter_pos = word.find('+');
-				words_list[i] = word.substr(0, delimiter_pos);
+
+				words_list[i] = url_decoding(word.substr(0, delimiter_pos));
 			}
 			else
 			{
 				word = word.substr(delimiter_pos + 1);
 				delimiter_pos = word.find('+');
-				words_list[i] = word.substr(0, delimiter_pos);
+				words_list[i] = url_decoding(word.substr(0, delimiter_pos));
 			}
 		}
 	}
@@ -324,6 +322,31 @@ private:
 			}
 			return tmp_url_list;
 		}
+	}
+
+	std::string url_decoding(std::string decode)
+	{
+		std::string tmp_word;
+		char symbol;
+		int j = 0;
+		int hex = 0;
+
+		for (int j = 0; j < decode.size(); j++)
+		{
+			if (decode[j] == '%')
+			{
+				std::sscanf(decode.substr(j + 1, j + 2).c_str(), "%x", &hex);
+				symbol = static_cast<char>(hex);
+				tmp_word += symbol;
+				j = j + 2;
+			}
+			else
+			{
+				tmp_word += decode[j];
+			}
+		}
+		std::cout << "tmp_word: " << tmp_word << std::endl;
+		return tmp_word;
 	}
 };
 
