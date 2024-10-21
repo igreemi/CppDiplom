@@ -240,18 +240,18 @@ void SpiderClient::RunSpider(SpiderReadConfig config)
                         lock.unlock();
                         cv.notify_all();
 
-                        std::unique_lock<std::mutex> lock3(mt);
-                        cv3.wait(lock3, [&] { return state_th3 = true; });
+                        std::unique_lock<std::mutex> lock2(mt2);
+                        cv2.wait(lock2, [&] { return state_th2 = true; });
 
                         std::string url_str = HandleUrl(url, target, host, port, depth);
 
-                        state_th3 = false;
-                        lock3.unlock();
-                        cv3.notify_all();
+                        state_th2 = false;
+                        lock2.unlock();
+                        cv2.notify_all();
 
                         if (!url_str.empty())
                         {
-                            std::unique_lock<std::mutex> lock3(mt);
+                            std::unique_lock<std::mutex> lock3(mt3);
                             cv3.wait(lock3, [&] { return state_th3 = true; });
 
                             std::string wordStr = url_str;
@@ -264,7 +264,7 @@ void SpiderClient::RunSpider(SpiderReadConfig config)
                             lock3.unlock();
                             cv3.notify_all();
 
-                            std::unique_lock<std::mutex> lock4(mt);
+                            std::unique_lock<std::mutex> lock4(mt4);
                             cv4.wait(lock4, [&] { return state_th4 = true; });
                             
                             SearchAndClearUrl(url_str, host, target, url_list);

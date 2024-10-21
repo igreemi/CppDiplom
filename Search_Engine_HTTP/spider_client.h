@@ -26,8 +26,7 @@ class SpiderClient
 {
 private:
 
-    std::mutex mt;
-    std::mutex mt2;
+    std::mutex mt, mt2, mt3, mt4;
     std::condition_variable cv, cv2, cv3, cv4;
 
     std::string start_url = "";
