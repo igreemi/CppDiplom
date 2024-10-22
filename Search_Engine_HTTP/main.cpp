@@ -30,20 +30,20 @@ int main()
         std::thread thread1(lambda_spider, spider_read_config);
 
 
-//        auto const address = net::ip::make_address("127.0.0.1");
-//        unsigned short port = static_cast<unsigned short>(std::stoi(spider_read_config.server_port));
+        auto const address = net::ip::make_address("127.0.0.1");
+        unsigned short port = static_cast<unsigned short>(std::stoi(spider_read_config.server_port));
 
-//        net::io_context ioc{ 1 };
+        net::io_context ioc{ 1 };
 
-//        tcp::acceptor acceptor{ ioc, {address, port} };
-//        tcp::socket socket{ ioc };
-//        std::cout << "--- ÑÒÀÐÒ HTTP ÑÅÐÂÅÐÀ ---" << std::endl;
-//        http_server(acceptor, socket, spider_read_config);
+        tcp::acceptor acceptor{ ioc, {address, port} };
+        tcp::socket socket{ ioc };
+        std::cout << "--- ÑÒÀÐÒ HTTP ÑÅÐÂÅÐÀ ---" << std::endl;
+        http_server(acceptor, socket, spider_read_config);
 
-//        system("start http://127.0.0.1");
+        system("start http://127.0.0.1");
 
 
-//        ioc.run();
+        ioc.run();
 
         thread1.join();
     }
