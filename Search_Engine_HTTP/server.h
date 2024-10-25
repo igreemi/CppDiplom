@@ -1,5 +1,4 @@
 #pragma once
-//#pragma execution_character_set("utf-8")
 
 #include <pqxx/pqxx>
 #include <boost/beast/core.hpp>
@@ -48,13 +47,22 @@ public:
 			" password = " + config.db_password);
 
 		txn = new pqxx::work(*connect_db);
-
+/*
 		connect_db->prepare("select_word", "SELECT pages.url FROM pages "
 			"JOIN page_words ON pages.id = page_words.page_id "
 			"JOIN words ON page_words.word_id = words.id "
 			"WHERE words.word IN ($1, $2, $3, $4) "
 			"GROUP BY pages.url "
 			"ORDER BY SUM(page_words.count) DESC;");
+*/
+		connect_db->prepare("select_word",
+			"SELECT pages.url FROM pages "
+			"JOIN page_words ON pages.id = page_words.page_id "
+			"JOIN words ON page_words.word_id = words.id "
+			"WHERE words.word IN (LOWER($1), LOWER($2), LOWER($3), LOWER($4)) "
+			"GROUP BY pages.url "
+			"ORDER BY SUM(page_words.count) DESC;"
+		);
 	}
 
 	// Initiate the asynchronous operations associated with the connection.
@@ -131,10 +139,6 @@ private:
 			request_.set(http::field::accept_language, "ru");
 			request_.set(http::field::content_type, "text/html;charset=UTF-8");
 			words = beast::buffers_to_string(request_.body().data());
-
-			std::cout << words << std::endl;
-
-			std::cout << "--- ×ÒÎ ÒÎ ÍÀ ÊÈÐÈËËÈÖÅ ---" << std::endl;
 
 			response_.set(http::field::content_type, "text/html;charset=UTF-8");
 
@@ -345,7 +349,6 @@ private:
 				tmp_word += decode[j];
 			}
 		}
-		std::cout << "tmp_word: " << tmp_word << std::endl;
 		return tmp_word;
 	}
 };

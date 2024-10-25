@@ -5,10 +5,6 @@
 #include <boost/locale.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
-#include <boost/regex/icu.hpp>
-#include <unicode/ustream.h>
-
-#include <mutex>
 #include <string>
 #include <regex>
 #include <vector>
@@ -28,8 +24,6 @@ private:
     std::string _user = ""; // = "postgres";
     std::string _pass = ""; // = "123";
 
-    std::mutex mt;
-
     std::string CleanText(std::string& text);
 
 public:
@@ -45,8 +39,5 @@ public:
 
     std::map<std::string, int> AnalyzeWords(std::string text);
 
-    void PrintVocabulary(std::map<std::string, int>& vocabulary);
-
-    void IndexingPages(std::string url, std::string words); // std::map<std::string, int>& vocabulary);
-
+    void IndexingPages(std::string url, std::string words);
 };

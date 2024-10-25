@@ -1,5 +1,4 @@
 #include "indexer.h"
-//#pragma execution_character_set("utf-8")
 
 Indexer::Indexer()
 {
@@ -32,8 +31,6 @@ void Indexer::ConnectDB(SpiderReadConfig config)
     connect_db->prepare("insert_page_word", "INSERT INTO page_words (page_id, word_id, count) VALUES ($1, $2, $3)");
 
     txn->commit();
-
-    //std::cout << "ТАБЛИЦЫ СОЗДАНЫ" << std::endl;
 }
 
 std::string Indexer::CleanText(std::string& text)
@@ -76,22 +73,10 @@ std::map<std::string, int> Indexer::AnalyzeWords(std::string text)
     return frequencies;
 }
 
-void Indexer::PrintVocabulary(std::map<std::string, int>& vocabulary)
+void Indexer::IndexingPages(std::string url, std::string words)
 {
-    std::cout << "WORDS-|-QUANTITY" << std::endl;
-    for (auto& [word, count] : vocabulary)
-    {
-        std::cout << word << " | " << count << std::endl;
-    }
-}
-
-void Indexer::IndexingPages(std::string url, std::string words) //std::map<std::string, int>& vocabulary)
-{
-//    std::lock_guard<std::mutex> lock(mt);
-
     std::map tmp_vocabulary = AnalyzeWords(words);
     pqxx::result page_res = txn->exec_prepared("insert_page", url);
-    //std::cout << "URL " << url << " dobavlen" << " thread: " << std::this_thread::get_id() << std::endl;
 
     int page_id = -1;
     if (!page_res.empty())
@@ -109,10 +94,6 @@ void Indexer::IndexingPages(std::string url, std::string words) //std::map<std::
         }
         
     }
-    else
-    {
-        //std::cout << "URL " << url << " sushestvuet" << " thread: " << std::this_thread::get_id() << std::endl;
-        
-    }
+
     connect_db->close();
 }

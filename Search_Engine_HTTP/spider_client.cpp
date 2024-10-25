@@ -1,5 +1,4 @@
 #include "spider_client.h"
-//#pragma execution_character_set("utf-8")
 
 bool SpiderClient::HandleRedirect(boost::url& target_url, http::response<http::string_body>& res)
 {
@@ -38,7 +37,7 @@ std::string SpiderClient::HandleUrl(const std::string& url, std::string& target,
         if (parse_url.host().empty())
         {
             std::string tmp_url = parse_url.path();
-            int delimiter_pos = tmp_url.find('/');
+            size_t delimiter_pos = tmp_url.find('/');
             host = tmp_url.substr(0, delimiter_pos);
             target = tmp_url.substr(delimiter_pos);
         }
@@ -52,7 +51,7 @@ std::string SpiderClient::HandleUrl(const std::string& url, std::string& target,
 
         net::io_context ioc;
 
-        boost::asio::ssl::context ctx{ boost::asio::ssl::context::tlsv12_client };
+        ssl::context ctx{ ssl::context::tlsv12_client };
 
         if (use_ssl)
         {
@@ -61,6 +60,7 @@ std::string SpiderClient::HandleUrl(const std::string& url, std::string& target,
         }
 
         tcp::resolver resolver{ ioc };
+
         tcp::socket socket{ ioc };
         ssl::stream<beast::tcp_stream> stream{ ioc, ctx };
         
@@ -74,7 +74,7 @@ std::string SpiderClient::HandleUrl(const std::string& url, std::string& target,
             }
         }
 
-        auto results = resolver.resolve(host, port);
+        auto results = resolver.resolve(host.c_str(), port.c_str());
 
         if (!use_ssl)
         {
@@ -163,10 +163,18 @@ void SpiderClient::SearchAndClearUrl(std::string url_str, std::string host,
     {
         std::string link = resRegex[1].str();
 
-        if (link[0] == '#')
+        if (link.find('#') != std::string::npos)
         {
-            std::string tmp_link = host + target + link;
-            url_list.push(tmp_link);
+            if (link[0] == '#')
+            {
+
+            }
+            else
+            {
+                size_t delimetr_pos = link.find('#');
+                std::string tmp_link = host + target + link.substr(0, delimetr_pos);
+                url_list.push(tmp_link);
+            }
         }
         else if(link[0] == '/')
         {
@@ -200,7 +208,7 @@ void SpiderClient::RunSpider(SpiderReadConfig config)
 
     std::queue<std::string> url_list;
     url_list.push(start_url);
-    std::string host;
+    std::string host = "";
 
     for (int depth = 0; depth < max_depth; depth++)
     {
@@ -211,13 +219,13 @@ void SpiderClient::RunSpider(SpiderReadConfig config)
             num_threads = std::thread::hardware_concurrency();
         }
 
-        const int url_list_size = url_list.size();
+        size_t url_list_size = url_list.size();
 
         for (int th = 0; th < url_list_size; th += num_threads)
         {
             std::vector<std::thread> threads;
 
-            for(int i = 0; i < num_threads; i++)
+            for(unsigned int i = 0; i < num_threads; i++)
             {
                 if (th + i >= url_list_size)
                 {
@@ -226,9 +234,9 @@ void SpiderClient::RunSpider(SpiderReadConfig config)
 
                 threads.emplace_back([&url_list, depth, &host, config, this]
                     {
-                        std::string target;
+                        std::string target = "";
 
-                        std::string url;
+                        std::string url = "";
 
                         std::unique_lock lock(mt);
                         cv.wait(lock, [&] { return state_th = true; });
